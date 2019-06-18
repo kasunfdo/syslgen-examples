@@ -166,7 +166,7 @@ CodeGenTransform:
       formatArgs = '"%s' + Join(path3, "/") + '"'
     )
 
-  !view urlVariable(ep <: sysl.Endpoint) -> DeclareAndAssignStmt:
+  !view urlVariable(ep <: sysl.Endpoint) -> StatementList:
     ep -> (:
       Statement = ep -> <Statement> (:
         DeclareAndAssignStmt = ep -> <DeclareAndAssignStmt> (:
@@ -183,7 +183,7 @@ CodeGenTransform:
       )
     )
 
-  !view callRestLib(ep <: string) -> DeclareAndAssignStmt:
+  !view callRestLib(ep <: string) -> StatementList:
     ep -> (:
       Statement = ep -> <Statement> (:
         ReturnStmt = ep -> <ReturnStmt> (:
@@ -204,7 +204,7 @@ CodeGenTransform:
       )
     )
 
-  !view callHttpMethodWithNoQueryArgs(methodName <: string, ep <: sysl.Endpoint) -> Block:
+  !view callHttpMethodWithNoQueryArgs(methodName <: string, ep <: sysl.Endpoint) -> StatementList:
     ep -> (:
       Statement = ep -> <Statement> (:
         DeclareAndAssignStmt = ep -> <DeclareAndAssignStmt> (:
@@ -220,7 +220,7 @@ CodeGenTransform:
       )   
     )
 
-  !view declareReturnTypeArray(variableName <: string, typeName <: string, values <: sequence of string) -> DeclareAndAssignStmt:
+  !view declareReturnTypeArray(variableName <: string, typeName <: string, values <: sequence of string) -> StatementList:
     typeName -> (:
       Statement = typeName -> <Statement> (:
         DeclareAndAssignStmt = typeName -> <DeclareAndAssignStmt> (:
@@ -238,7 +238,7 @@ CodeGenTransform:
       )
     )
 
-  !view declareHeaders(variableName <: string, typeName <: string, values <: sequence of string) -> DeclareAndAssignStmt:
+  !view declareHeaders(variableName <: string, typeName <: string, values <: sequence of string) -> StatementList:
     typeName -> (:
       Statement = typeName -> <Statement> (:
         DeclareAndAssignStmt = typeName -> <DeclareAndAssignStmt> (:
@@ -266,7 +266,7 @@ CodeGenTransform:
       )
     )
 
-  !view returnOutAndErr(name <: string) -> DeclareAndAssignStmt:
+  !view returnOutAndErr(name <: string) -> StatementList:
     name -> (:
       Statement = name -> <Statement> (:
         ReturnStmt = name -> <ReturnStmt> (:
@@ -343,7 +343,7 @@ CodeGenTransform:
       )
     )
 
-  !view HttpMethodStatments(ep <: sysl.Endpoint) -> StatementList:
+  !view HttpMethodStatments(ep <: sysl.Endpoint) -> Block:
     ep -> (:
       let requiredHeaders = ep.value.params where("header" in .attrs.patterns && "required" in .attrs.patterns)
       let required = declareHeaders("required", "string", requiredHeaders flatten(.attrs.name))

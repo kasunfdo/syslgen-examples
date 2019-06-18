@@ -48,10 +48,8 @@ CodeGenTransform:
 
   !view varDecl(name <: string, typeName <: string) -> VarDecl:
     name -> (:
-      VarDecl = name -> <VarDecl> (:
-        identifier = name
-        TypeName = typeName
-      )
+      identifier = name
+      TypeName = typeName
     )
 
   !view handleError(condition <: string, errorCode <: string, errorMsg <: string, errorObj <: string) -> Statement:
@@ -103,10 +101,12 @@ CodeGenTransform:
 
   !view structVarDecl(bodyParams <: BodyParams) -> sequence of StatementList:
     bodyParams -> (param:
-      Statement = varDecl(param.paramName, param.paramType)
+      Statement = param -> <VarDecl>(:
+        VarDecl =varDecl(param.paramName, param.paramType)
+      )
     )
     
-  !view jsonDecode(bodyParams <: BodyParams, packageName <: string) -> sequence of StatementList:
+  !view jsonDecode(bodyParams <: BodyParams, packageName <: string) -> Block:
     packageName -> (:
       let decodeErr = "decodeErr"
       let decodeStmts = bodyParams -> <StatementList> (param:
@@ -205,7 +205,7 @@ CodeGenTransform:
       )
     )
   
-  !view getReqVars(allParams <: AllParams) -> sequence of StatementList:
+  !view getReqVars(allParams <: AllParams) -> Block:
     allParams -> (:
       let qParamStatements = getParamStatements(allParams.QueryParams, "restlib.GetQueryParam")
       let headerStatements = getParamStatements(allParams.HeaderParams, "restlib.GetHeaderParam")
@@ -213,7 +213,7 @@ CodeGenTransform:
       StatementList = qParamStatements | headerStatements | pathParamStatements
     )
 
-  !view getBodyParams(bodyParams <: BodyParams, packageName <: string) -> sequence of StatementList:
+  !view getBodyParams(bodyParams <: BodyParams, packageName <: string) -> Block:
     packageName -> (:
       let decoder = jsonDecoder("decoder")
       let structVarDecl = structVarDecl(bodyParams)
@@ -222,7 +222,7 @@ CodeGenTransform:
       StatementList = [decoder] | structVarDecl | jsonDecode
     )
 
-  !view getAllParams(ep <: sysl.Endpoint) -> sequence of AllParams:
+  !view getAllParams(ep <: sysl.Endpoint) -> AllParams:
     ep -> (:
       let queryParams = ep.value.queryvars -> <QueryParams> (param:
         paramType = ParamType(param).out
@@ -273,7 +273,7 @@ CodeGenTransform:
       )
     )
     
-  !view verifyAuthHeaders(ep <: sysl.Endpoint) -> sequence of StatementList:
+  !view verifyAuthHeaders(ep <: sysl.Endpoint) -> Block:
     ep -> (:
       let condition = '!s.serviceInterface.IsAuthorized(r, Authorization)'
       # Following statement causes gosimple error by golangci-lint
@@ -363,7 +363,7 @@ CodeGenTransform:
       )
     )
 
-  !view goFile(app <: sysl.App) -> string:
+  !view goFile(app <: sysl.App) -> goFile:
     app -> (:
       PackageClause = app -> <package> (:
         let pname = if .attrs.package != null then .attrs.package else app.name
